@@ -2,8 +2,8 @@
   "name": "agent-test",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "start": "tsx src/agent.ts"
   },
   "keywords": [],
@@ -12,7 +12,10 @@
   "type": "module",
   "dependencies": {
     "@google/genai": "^1.46.0",
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.72.0",
     "@strands-agents/sdk": "^1.0.0-rc.1",
+    "bedrock-agentcore": "^0.2.2",
     "dotenv": "^17.3.1"
   },
   "devDependencies": {

@@ -1,14 +1,10 @@
 // Define a custom tool as a TypeScript function
-import { Agent, tool } from '@strands-agents/sdk';
-import { GoogleModel } from '@strands-agents/sdk/models/google';
+import { Agent, BedrockModel, tool } from '@strands-agents/sdk';
 import 'dotenv/config';
 import z from 'zod';
-import { processAgentEvent } from './processAgentEvent.js';
-import { logEvent } from './utils/logging.js';
 
-const model = new GoogleModel({
-  apiKey: process.env.GOOGLE_API_KEY!,
-  modelId: 'gemini-3-flash-preview',
+const model = new BedrockModel({
+  modelId: 'eu.amazon.nova-lite-v1:0',
 });
 
 const awesomeTool = tool({
@@ -27,18 +23,7 @@ const awesomeTool = tool({
 });
 
 // Create an agent with tools with our custom awesomeTool
-const agent = new Agent({
+export const agent = new Agent({
   model,
   tools: [awesomeTool],
-  printer: false,
 });
-
-// Ask the agent a question that uses the available tools
-const message = `I am fairly awesome, but I want to be a lot more awesome. Can you help me with that?`;
-
-const responseGenerator = agent.stream(message);
-for await (const event of responseGenerator) {
-  processAgentEvent(event);
-}
-
-logEvent.flush();
