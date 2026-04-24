@@ -8,7 +8,7 @@ import { logEvent } from './utils/logging.js';
 
 const model = new GoogleModel({
   apiKey: process.env.GOOGLE_API_KEY!,
-  modelId: 'gemini-3-flash-preview',
+  modelId: 'gemini-3.1-flash-lite-preview',
 });
 
 const awesomeTool = tool({

@@ -22,34 +22,61 @@ export const totalUsage: UsageTotals = {
   cacheWriteInputTokens: 0,
 };
 
+function formatEventTitle(eventName: string, meaning: string): string {
+  return `${eventName}: ${meaning}`;
+}
+
 export function createAgentEventProcessor(options: CreateAgentEventProcessorOptions) {
   const { logEvent, totalUsage } = options;
 
   return (event: AgentStreamEvent): void => {
     switch (event.type) {
       case 'beforeInvocationEvent':
-        logEvent('🔄 Agent loop initialized');
+        logEvent(formatEventTitle('beforeInvocationEvent', '🔄 Agent loop initialized'));
         break;
       case 'beforeModelCallEvent':
-        logEvent('▶️ Agent loop started');
-        logEvent('🤖 About to invoke model with messages', event.agent.messages, 'event.agent.messages');
+        logEvent(
+          formatEventTitle('beforeModelCallEvent', '🤖 About to invoke model with messages'),
+          event.agent.messages,
+          'event.agent.messages',
+        );
         break;
       case 'afterModelCallEvent':
-        logEvent('📬 Model invocation completed', event.stopData?.message, 'event.stopData.message');
+        logEvent(
+          formatEventTitle('afterModelCallEvent', '📬 Model invocation completed'),
+          event.stopData?.message,
+          'event.stopData.message',
+        );
         break;
       case 'beforeToolsEvent':
-        logEvent('🧭 Model result indicates tool execution', event.message, 'event.message');
+        logEvent(
+          formatEventTitle('beforeToolsEvent', '🧭 Model result indicates tool execution'),
+          event.message,
+          'event.message',
+        );
         break;
       case 'beforeToolCallEvent':
-        logEvent(`🛠️ Calling tool "${event.tool?.name}"`, event.toolUse.input, 'event.toolUse.input');
+        logEvent(
+          formatEventTitle('beforeToolCallEvent', `🛠️ Calling tool "${event.tool?.name}"`),
+          event.toolUse.input,
+          'event.toolUse.input',
+        );
         break;
       case 'afterToolCallEvent':
-        logEvent(`✅ Finished calling tool "${event.tool?.name}"`, event.result.content, 'event.result.content');
+        logEvent(
+          formatEventTitle('afterToolCallEvent', `✅ Finished calling tool "${event.tool?.name}"`),
+          event.result.content,
+          'event.result.content',
+        );
         break;
       case 'modelStreamUpdateEvent':
         switch (event.event.type) {
           case 'modelContentBlockDeltaEvent':
-            logEvent('✏️ New delta', event.event.delta, 'event.event.delta');
+            logEvent(
+              formatEventTitle('modelContentBlockDeltaEvent', '✏️ New delta'),
+              event.event.delta,
+              'event.event.delta',
+            );
             break;
           case 'modelMetadataEvent':
             totalUsage.inputTokens += event.event.usage?.inputTokens ?? 0;
@@ -59,31 +86,30 @@ export function createAgentEventProcessor(options: CreateAgentEventProcessorOpti
             totalUsage.cacheWriteInputTokens += event.event.usage?.cacheWriteInputTokens ?? 0;
 
             logEvent(
-              '📊 Token usage updated',
+              formatEventTitle('modelMetadataEvent', '📊 Token usage updated'),
               { current: event.event.usage, total: totalUsage },
               '{ current: event.event.usage, total: totalUsage }',
             );
             break;
-          case 'modelMessageStartEvent':
-          case 'modelContentBlockStartEvent':
-          case 'modelContentBlockStopEvent':
-          case 'modelMessageStopEvent':
-          case 'modelRedactionEvent':
+          default:
+            logEvent(event.event.type);
             break;
         }
         break;
       case 'modelMessageEvent':
-        logEvent('💬 Message returned', event.message, 'event.message');
-        break;
-      case 'afterToolsEvent':
-      case 'contentBlockEvent':
-      case 'toolStreamUpdateEvent':
-      case 'toolResultEvent':
-      case 'messageAddedEvent':
-      case 'agentResultEvent':
+        logEvent(formatEventTitle('modelMessageEvent', '💬 Message returned'), event.message, 'event.message');
         break;
       case 'afterInvocationEvent':
-        logEvent('✅ Agent loop completed');
+        logEvent(formatEventTitle('afterInvocationEvent', '✅ Agent loop completed'));
+        break;
+      case 'agentResultEvent':
+        logEvent(
+          formatEventTitle('agentResultEvent', '🏁 Final agent result'),
+          event.result.lastMessage,
+          'event.result.lastMessage',
+        );
+      default:
+        logEvent(event.type);
         break;
     }
   };

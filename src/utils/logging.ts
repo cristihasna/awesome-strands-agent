@@ -10,18 +10,39 @@ interface CreateBufferedLoggerOptions {
   heading?: string;
 }
 
+function formatMarkdownTitle(title: string): { heading: string; content: string } {
+  const eventMatch = /^([^:]+): (.+)$/.exec(title);
+  if (eventMatch) {
+    return {
+      heading: '###',
+      content: `\`${eventMatch[1]}\`: ${eventMatch[2]}`,
+    };
+  }
+
+  const escapedTitle = title.trim().startsWith('`') ? title : `\`${title}\``;
+  return {
+    heading: '###',
+    content: escapedTitle,
+  };
+}
+
 function appendMarkdown(lines: string[], title: string, value?: unknown, valueLabel?: string): void {
-  lines.push(`## ${title}`);
+  const formattedTitle = formatMarkdownTitle(title);
+  if (lines.length > 2) {
+    lines.push('---');
+    lines.push('');
+  }
+
+  lines.push(`${formattedTitle.heading} ${formattedTitle.content}`);
   lines.push('');
 
   if (value === undefined) {
     return;
   }
 
-  if (valueLabel) {
-    lines.push(`\`${valueLabel}\`:`);
-    lines.push('');
-  }
+  lines.push('<details>');
+  lines.push(`<summary><code>${valueLabel ?? 'payload'}</code></summary>`);
+  lines.push('');
 
   if (typeof value === 'string') {
     lines.push('```text');
@@ -33,6 +54,8 @@ function appendMarkdown(lines: string[], title: string, value?: unknown, valueLa
     lines.push('```');
   }
 
+  lines.push('');
+  lines.push('</details>');
   lines.push('');
 }
 
