@@ -1,11 +1,11 @@
 // Define a custom tool as a TypeScript function
-import { Agent, BedrockModel, tool } from '@strands-agents/sdk';
-import 'dotenv/config';
+import { Agent, tool } from '@strands-agents/sdk';
+import { GoogleModel } from '@strands-agents/sdk/models/google';
+import { withApiKey } from 'bedrock-agentcore/identity';
 import z from 'zod';
 
-const model = new BedrockModel({
-  modelId: 'eu.amazon.nova-lite-v1:0',
-});
+const GEMINI_MODEL_ID = 'gemini-3-flash-lite-preview';
+const GEMINI_PROVIDER_NAME = 'gemini';
 
 const awesomeTool = tool({
   name: 'be_awesome',
@@ -22,8 +22,22 @@ const awesomeTool = tool({
   },
 });
 
-// Create an agent with tools with our custom awesomeTool
-export const agent = new Agent({
-  model,
-  tools: [awesomeTool],
+function createAgent(apiKey: string) {
+  const model = new GoogleModel({
+    apiKey,
+    modelId: GEMINI_MODEL_ID,
+  });
+
+  return new Agent({
+    model,
+    tools: [awesomeTool],
+  });
+}
+
+export const invokeAgent = withApiKey({ providerName: GEMINI_PROVIDER_NAME })(async (
+  prompt: string,
+  apiKey: string,
+) => {
+  const agent = createAgent(apiKey);
+  return agent.invoke(prompt);
 });

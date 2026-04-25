@@ -8,7 +8,7 @@ It includes:
 - A Bedrock AgentCore runtime entry point in `src/runtime.ts`
 - A minimal custom tool to show how tools can be exposed to the agent
 
-The current demo uses an Amazon Bedrock model (`eu.amazon.nova-lite-v1:0`) and is intended to be configured and deployed with the `agentcore` CLI.
+The current demo uses the Google Gemini API model `gemini-3-flash-lite-preview` and is intended to be configured and deployed with the `agentcore` CLI.
 
 ## Prerequisites
 
@@ -16,12 +16,29 @@ Before you start, make sure the following are available on your machine:
 
 - Python 3
 - Node.js 20+
-- AWS CLI configured for the account/profile you want to use
+- A Gemini API key
+- AWS CLI configured for the account/profile you want to use if you plan to deploy with AgentCore
 - `agentcore` CLI available in a Python environment
 
-## AWS Authentication
+## Gemini API Authentication In AgentCore
 
-Before running the project, make sure you are logged into AWS and that valid credentials are exported into your shell session.
+For deployed AgentCore runtimes, store the Gemini key in AgentCore Identity, not in `.env` and not in source code.
+
+Recommended setup:
+
+1. Open the AgentCore Identity console.
+2. In Outbound Auth, choose Add OAuth client / API key, then Add API key.
+3. Save your Gemini key under a provider name such as `gemini`.
+4. Deploy the agent.
+
+Notes:
+- The deployed runtime retrieves the key at request time through AgentCore Identity using the workload identity token that AgentCore injects into the request context.
+- By default, this code looks for an AgentCore Identity API key provider named `gemini`.
+- If you want a different provider name, set the non-secret environment variable `GEMINI_API_KEY_PROVIDER_NAME` for the runtime and point it to that provider.
+
+## AWS Authentication For AgentCore Deployment
+
+If you plan to deploy this runtime with AgentCore, you still need AWS credentials for the deployment flow itself.
 
 Suggested flow:
 
@@ -31,9 +48,8 @@ eval $(aws configure export-credentials --profile myProfile --format env)
 ```
 
 Notes:
-- Make sure the aws region is set to eu-west-1 by running `export AWS_REGION=eu-west-1` if not already set.
-- Run the `eval $(aws configure export-credentials ...)` command in the same shell where you plan to start the app.
-- This project uses Amazon Bedrock through the AgentCore/Strands setup, so valid AWS credentials are required before startup.
+- Make sure the aws region is set to `eu-west-1` by running `export AWS_REGION=eu-west-1` if not already set.
+- Run the `eval $(aws configure export-credentials ...)` command in the same shell where you plan to run the AgentCore CLI.
 
 ## Install
 
@@ -113,7 +129,7 @@ src/
 
 ## How It Works
 
-`src/agent.ts` creates a Strands `Agent` backed by a Bedrock model and registers a demo tool named `be_awesome`.
+`src/agent.ts` retrieves the Gemini API key from AgentCore Identity at invocation time, creates a Strands `Agent` backed by the Gemini API model `gemini-3-flash-lite-preview`, and registers a demo tool named `be_awesome`.
 
 `src/runtime.ts` wraps that agent in a `BedrockAgentCoreApp` and validates incoming requests with a simple schema:
 
