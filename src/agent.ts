@@ -1,11 +1,14 @@
 // Define a custom tool as a TypeScript function
 import { Agent, tool } from '@strands-agents/sdk';
 import { GoogleModel } from '@strands-agents/sdk/models/google';
-import { withApiKey } from 'bedrock-agentcore/identity';
 import z from 'zod';
 
-const GEMINI_MODEL_ID = 'gemini-3-flash-lite-preview';
-const GEMINI_PROVIDER_NAME = 'gemini';
+const GEMINI_MODEL_ID = 'gemini-3.1-flash-lite-preview';
+const GEMINI_API_KEY = process.env.GEMIN_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  throw new Error('GEMIN_API_KEY is required.');
+}
 
 const awesomeTool = tool({
   name: 'be_awesome',
@@ -22,22 +25,12 @@ const awesomeTool = tool({
   },
 });
 
-function createAgent(apiKey: string) {
-  const model = new GoogleModel({
-    apiKey,
-    modelId: GEMINI_MODEL_ID,
-  });
+const model = new GoogleModel({
+  apiKey: GEMINI_API_KEY,
+  modelId: GEMINI_MODEL_ID,
+});
 
-  return new Agent({
-    model,
-    tools: [awesomeTool],
-  });
-}
-
-export const invokeAgent = withApiKey({ providerName: GEMINI_PROVIDER_NAME })(async (
-  prompt: string,
-  apiKey: string,
-) => {
-  const agent = createAgent(apiKey);
-  return agent.invoke(prompt);
+export const agent = new Agent({
+  model,
+  tools: [awesomeTool],
 });

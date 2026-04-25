@@ -22,19 +22,16 @@ Before you start, make sure the following are available on your machine:
 
 ## Gemini API Authentication In AgentCore
 
-For deployed AgentCore runtimes, store the Gemini key in AgentCore Identity, not in `.env` and not in source code.
+For deployed AgentCore runtimes, set `GEMIN_API_KEY` as a runtime environment variable. Do not put it in source code and do not bake it into the Dockerfile image.
 
 Recommended setup:
 
-1. Open the AgentCore Identity console.
-2. In Outbound Auth, choose Add OAuth client / API key, then Add API key.
-3. Save your Gemini key under a provider name such as `gemini`.
-4. Deploy the agent.
+1. Deploy the agent.
+2. Add `GEMIN_API_KEY` to the AgentCore runtime environment variables.
 
 Notes:
-- The deployed runtime retrieves the key at request time through AgentCore Identity using the workload identity token that AgentCore injects into the request context.
-- By default, this code looks for an AgentCore Identity API key provider named `gemini`.
-- If you want a different provider name, set the non-secret environment variable `GEMINI_API_KEY_PROVIDER_NAME` for the runtime and point it to that provider.
+- AgentCore Runtime supports environment variables in the runtime configuration.
+- This code reads the Gemini API key directly from `GEMIN_API_KEY`.
 
 ## AWS Authentication For AgentCore Deployment
 
@@ -129,7 +126,7 @@ src/
 
 ## How It Works
 
-`src/agent.ts` retrieves the Gemini API key from AgentCore Identity at invocation time, creates a Strands `Agent` backed by the Gemini API model `gemini-3-flash-lite-preview`, and registers a demo tool named `be_awesome`.
+`src/agent.ts` reads the Gemini API key directly from the runtime environment variable `GEMIN_API_KEY`, creates a Strands `Agent` backed by the Gemini API model `gemini-3-flash-lite-preview`, and registers a demo tool named `be_awesome`.
 
 `src/runtime.ts` wraps that agent in a `BedrockAgentCoreApp` and validates incoming requests with a simple schema:
 
