@@ -4,10 +4,10 @@ import { GoogleModel } from '@strands-agents/sdk/models/google';
 import z from 'zod';
 
 const GEMINI_MODEL_ID = 'gemini-3.1-flash-lite-preview';
-const GEMINI_API_KEY = process.env.GEMIN_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 if (!GEMINI_API_KEY) {
-  throw new Error('GEMIN_API_KEY is required.');
+  throw new Error('GEMINI_API_KEY is required.');
 }
 
 const awesomeTool = tool({
